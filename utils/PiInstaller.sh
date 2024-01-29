@@ -45,7 +45,6 @@ fi
 /sbin/parted -s ${1} mkpart primary ext3  ${5} 100%
 /bin/echo "20" > /tmp/install_progress
 /sbin/parted -s ${1} set 1 boot on
-/sbin/parted -s ${1} set 1 legacy_boot on
 sync
 /sbin/partprobe ${1}
 sleep 3
