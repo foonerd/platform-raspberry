@@ -1,2 +1,1 @@
-# platform-pi
-Volumio platform files for Raspbery Pi
+# Volumio platform files for Raspbery Pi disk installer.
