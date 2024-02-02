@@ -92,7 +92,7 @@ uuid_data=$(/sbin/blkid -s UUID -o value ${8})
 # Update UUIDs
 /bin/sed -i "s/imgpart=UUID=[a-fA-F0-9]\{8\}-[A-Fa-f0-9]\{4\}-[A-Fa-f0-9]\{4\}-[A-Fa-f0-9]\{4\}-[A-Fa-f0-9]\{12\}/imgpart=UUID=${uuid_img}/g" /tmp/boot/cmdline.txt
 /bin/sed -i "s/datapart=UUID=[a-fA-F0-9]\{8\}-[A-Fa-f0-9]\{4\}-[A-Fa-f0-9]\{4\}-[A-Fa-f0-9]\{4\}-[A-Fa-f0-9]\{12\}/datapart=UUID=${uuid_data}/g" /tmp/boot/cmdline.txt
-/bin/sed -i "s/bootpart=UUID=[a-fA-F0-9]\{4\}-[a-fA-F0-9]\{4\}/${uuid_boot}/g" /tmp/boot/cmdline.txt
+/bin/sed -i "s/bootpart=UUID=[a-fA-F0-9]\{4\}-[a-fA-F0-9]\{4\}/bootpart=UUID=${uuid_boot}/g" /tmp/boot/cmdline.txt
 /bin/sed -i "s/UUID=[a-fA-F0-9]\{4\}-[a-fA-F0-9]\{4\}/UUID=${uuid_boot}/g" /tmp/work/final/etc/fstab
 /bin/echo "75" > /tmp/install_progress
 
