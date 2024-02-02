@@ -63,27 +63,57 @@ sleep 3
 /bin/mkdir /tmp/volumio
 /bin/mount $6 /tmp/boot
 /bin/mount $7 /tmp/volumio
-/bin/echo "55" > /tmp/install_progress
+/bin/echo "50" > /tmp/install_progress
 
 # Install current boot partition
 /bin/tar xf /imgpart/kernel_current.tar -C /tmp/boot > /dev/null 2>&1
-/bin/echo "65" > /tmp/install_progress
+/bin/echo "60" > /tmp/install_progress
 
 # Copy current squash file
 /bin/cp -r /imgpart/* /tmp/volumio
-/bin/echo "85" > /tmp/install_progress
+/bin/echo "65" > /tmp/install_progress
 
-# Update UUIDs
+# Prepare UUIDs
 uuid_boot=$(/sbin/blkid -s UUID -o value ${6})
 uuid_img=$(/sbin/blkid -s UUID -o value ${7})
 uuid_data=$(/sbin/blkid -s UUID -o value ${8})
 
+# Init a loop pointing to the image file
+/bin/mkdir -m 777 /tmp/work # working directory
+/bin/mkdir -m 777 /tmp/work/from # for mounting original
+/bin/mkdir -m 777 /tmp/work/to # for upper unionfs layers
+/bin/mkdir -m 777 /tmp/work/temp # some overlayfs technical folder
+/bin/mkdir -m 777 /tmp/work/final # resulting folders/files would be there
+/bin/mount /tmp/volumio/volumio_current.sqsh /tmp/work/from -t squashfs -o loop
+/bin/mount -t overlay -olowerdir=/tmp/work/from,upperdir=/tmp/work/to,workdir=/tmp/work/temp overlay /tmp/work/final
+/bin/echo "70" > /tmp/install_progress
+
+# Update UUIDs
 /bin/sed -i "s/%%IMGPART%%/${uuid_img}/g" /tmp/boot/cmdline.txt
 /bin/sed -i "s/%%BOOTPART%%/${uuid_boot}/g" /tmp/boot/cmdline.txt
 /bin/sed -i "s/%%DATAPART%%/${uuid_data}/g" /tmp/boot/cmdline.txt
+/bin/sed -i "s/%%BOOTPART%%/${uuid_boot}/g" /tmp/work/final/etc/fstab
+/bin/echo "75" > /tmp/install_progress
 
+# Package resulting volumio_current squash file
+/usr/bin/mksquashfs /tmp/work/final/final /tmp/volumio/volumio_current.new
+/bin/echo "80" > /tmp/install_progress
+
+# Cleanup working directory 
+sudo umount /tmp/work/from
+sudo umount /tmp/work/final
+/bin/rm -rf /tmp/work/from # for mounting original
+/bin/rm -rf /tmp/work/to # for upper unionfs layers
+/bin/rm -rf /tmp/work/temp # some overlayfs technical folder
+/bin/rm -rf /tmp/work/final # resulting folders/files would be there
+/bin/rm -rf /tmp/work # working directory
+/bin/echo "85" > /tmp/install_progress
+
+# Move new and replace volumio_current squash file
+/bin/mv -f /tmp/volumio/volumio_current.new /tmp/volumio/volumio_current.sqsh
 /bin/echo "99" > /tmp/install_progress
 
+# Cleanup
 /bin/rm -r /tmp/volumio/lost+found
 /bin/umount /tmp/boot
 /bin/umount /tmp/volumio
@@ -91,7 +121,3 @@ uuid_data=$(/sbin/blkid -s UUID -o value ${8})
 /bin/rm -r /tmp/volumio
 
 sleep 1
-
-
-
-
