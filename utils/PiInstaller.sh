@@ -84,36 +84,38 @@ uuid_data=$(/sbin/blkid -s UUID -o value ${8})
 /bin/mkdir -m 777 /tmp/work/to # for upper unionfs layers
 /bin/mkdir -m 777 /tmp/work/temp # some overlayfs technical folder
 /bin/mkdir -m 777 /tmp/work/final # resulting folders/files would be there
+/bin/mkdir -m 777 /tmp/work/volumio # placeholder for new squash file
 /bin/mount /tmp/volumio/volumio_current.sqsh /tmp/work/from -t squashfs -o loop
 /bin/mount -t overlay -olowerdir=/tmp/work/from,upperdir=/tmp/work/to,workdir=/tmp/work/temp overlay /tmp/work/final
 /bin/echo "70" > /tmp/install_progress
 
 # Update UUIDs
-/bin/sed -i "s/%%IMGPART%%/${uuid_img}/g" /tmp/boot/cmdline.txt
-/bin/sed -i "s/%%BOOTPART%%/${uuid_boot}/g" /tmp/boot/cmdline.txt
-/bin/sed -i "s/%%DATAPART%%/${uuid_data}/g" /tmp/boot/cmdline.txt
-/bin/sed -i "s/%%BOOTPART%%/${uuid_boot}/g" /tmp/work/final/etc/fstab
+/bin/sed -i "s/imgpart=UUID=[a-fA-F0-9]\{8\}-[A-Fa-f0-9]\{4\}-[A-Fa-f0-9]\{4\}-[A-Fa-f0-9]\{4\}-[A-Fa-f0-9]\{12\}/imgpart=UUID=${uuid_img}/g" /tmp/boot/cmdline.txt
+/bin/sed -i "s/datapart=UUID=[a-fA-F0-9]\{8\}-[A-Fa-f0-9]\{4\}-[A-Fa-f0-9]\{4\}-[A-Fa-f0-9]\{4\}-[A-Fa-f0-9]\{12\}/datapart=UUID=${uuid_data}/g" /tmp/boot/cmdline.txt
+/bin/sed -i "s/bootpart=UUID=[a-fA-F0-9]\{4\}-[a-fA-F0-9]\{4\}/${uuid_boot}/g" /tmp/boot/cmdline.txt
+/bin/sed -i "s/UUID=[a-fA-F0-9]\{4\}-[a-fA-F0-9]\{4\}/UUID=${uuid_boot}/g" /tmp/work/final/etc/fstab
 /bin/echo "75" > /tmp/install_progress
 
 # Package resulting volumio_current squash file
-/usr/bin/mksquashfs /tmp/work/final/final /tmp/volumio/volumio_current.new
+/usr/bin/mksquashfs /tmp/work/final /tmp/work/volumio/volumio_current.sqsh
 /bin/echo "80" > /tmp/install_progress
 
 # Cleanup working directory 
-sudo umount /tmp/work/from
-sudo umount /tmp/work/final
+/bin/umount /tmp/work/from
+/bin/umount /tmp/work/final
 /bin/rm -rf /tmp/work/from # for mounting original
 /bin/rm -rf /tmp/work/to # for upper unionfs layers
 /bin/rm -rf /tmp/work/temp # some overlayfs technical folder
 /bin/rm -rf /tmp/work/final # resulting folders/files would be there
-/bin/rm -rf /tmp/work # working directory
 /bin/echo "85" > /tmp/install_progress
 
 # Move new and replace volumio_current squash file
-/bin/mv -f /tmp/volumio/volumio_current.new /tmp/volumio/volumio_current.sqsh
+/bin/mv -f /tmp/work/volumio/volumio_current.sqsh /tmp/volumio/volumio_current.sqsh
 /bin/echo "99" > /tmp/install_progress
 
 # Cleanup
+/bin/rm -rf /tmp/work/volumio # placeholder for new squash file
+/bin/rm -r /tmp/work # working directory
 /bin/rm -r /tmp/volumio/lost+found
 /bin/umount /tmp/boot
 /bin/umount /tmp/volumio
