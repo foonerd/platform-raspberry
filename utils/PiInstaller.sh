@@ -32,7 +32,8 @@ if [ "$#" -ne 8 ]; then
 fi
 
 # Wipe the partition table
-/bin/dd if=/dev/zero of=$1 count=512 > /dev/null 2>&1
+/bin/dd if=/dev/zero of=$1 bs=512 count=34 > /dev/null 2>&1
+/sbin/blkid -g
 /bin/echo "5" > /tmp/install_progress
 
 # Re-partition
