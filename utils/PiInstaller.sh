@@ -32,7 +32,7 @@ if [ "$#" -ne 8 ]; then
 fi
 
 # Wipe the partition table
-/bin/dd if=/dev/zero of=$1 bs=512 count=34 > /dev/null 2>&1
+/bin/dd if=/dev/zero of=$1 bs=1024 count=1024 > /dev/null 2>&1
 /sbin/blkid -g
 /bin/echo "5" > /tmp/install_progress
 
@@ -60,18 +60,18 @@ sleep 3
 /bin/echo "40" > /tmp/install_progress
 
 # Mount boot and image partition
-/bin/mkdir /tmp/boot
-/bin/mkdir /tmp/volumio
+/bin/mkdir -m 777 /tmp/boot
+/bin/mkdir -m 777 /tmp/volumio
 /bin/mount $6 /tmp/boot
 /bin/mount $7 /tmp/volumio
 /bin/echo "50" > /tmp/install_progress
 
 # Install current boot partition
-/bin/tar xf /imgpart/kernel_current.tar -C /tmp/boot > /dev/null 2>&1
+/bin/tar xf /imgpart/kernel_current.tar -C /tmp/boot --overwrite --no-same-owner > /dev/null 2>&1
 /bin/echo "60" > /tmp/install_progress
 
 # Copy current squash file
-/bin/cp -r /imgpart/* /tmp/volumio
+/bin/cp -rf /imgpart/* /tmp/volumio
 /bin/echo "65" > /tmp/install_progress
 
 # Prepare UUIDs
